@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf - 8">
+    <meta name="viewport" content="">
+    <title> Pizarra </title>
+    <!--Cristian Piedrahita prueba pizarra-->
+
+</head>
+
+<body>
+
+    <style>
+        canvas {
+            width: 500px;
+            height: 500px;
+            background-color: #0D0909;
+        }
+
+        #limpiar {
+            text-decoration: none;
+            padding: 10px;
+            font-weight: 600;
+            font-size: 20px;
+            color: #ffffff;
+            background-color: #1883ba;
+            border-radius: 6px;
+            border: 2px solid #0016b0;
+        }
+
+        #guardar {
+            text-decoration: none;
+            padding: 10px;
+            font-weight: 600;
+            font-size: 20px;
+            color: blue;
+            background-color: greenyellow;
+            border-radius: 6px;
+            border: 2px solid green;
+        }
+
+        button:hover {
+            color: #1883ba;
+            background-color: #ffffff;
+        }
+    </style>
+
+    <div>
+
+        <canvas id="pizarra"></canvas>
+
+    </div>
+
+    <br>
+    <button id="limpiar" onclick="clickLimpiar()"> Limpiar </button>
+    <button id="guardar" onclick="guardar()"> Guardar </button>
+
+    <script>
+        //======================================================================
+        // VARIABLES
+        //======================================================================
+        let miCanvas = document.querySelector('#pizarra');
+        let lineas = [];
+        let correccionX = 0;
+        let correccionY = 0;
+        let pintarLinea = false;
+        // Marca el nuevo punto
+        let nuevaPosicionX = 0;
+        let nuevaPosicionY = 0;
+
+        let posicion = miCanvas.getBoundingClientRect()
+        correccionX = posicion.x;
+        correccionY = posicion.y;
+
+        miCanvas.width = 500;
+        miCanvas.height = 500;
+
+        //======================================================================
+        // FUNCIONES
+        //======================================================================
+
+        /**
+         * Funcion que empieza a dibujar la linea
+         */
+        function empezarDibujo() {
+            pintarLinea = true;
+            lineas.push([]);
+        };
+
+        /**
+         * Funcion que guarda la posicion de la nueva línea
+         */
+        function guardarLinea() {
+            lineas[lineas.length - 1].push({
+                x: nuevaPosicionX,
+                y: nuevaPosicionY
+            });
+        }
+
+        
+        //  Funcion dibuja la linea
+         
+        var ctx = miCanvas.getContext('2d')
+        function dibujarLinea(event) {
+            event.preventDefault();
+            if (pintarLinea) {
+                // let ctx = miCanvas.getContext('2d')
+                // Estilos de linea
+                ctx.lineJoin = ctx.lineCap = 'round';
+                ctx.lineWidth = 10;
+                // Color de la linea
+                ctx.strokeStyle = '#fff';
+                // Marca el nuevo punto
+                if (event.changedTouches == undefined) {
+                    // Versión ratón
+                    nuevaPosicionX = event.layerX;
+                    nuevaPosicionY = event.layerY;
+                } else {
+                    // Versión touch, pantalla tactil
+                    nuevaPosicionX = event.changedTouches[0].pageX - correccionX;
+                    nuevaPosicionY = event.changedTouches[0].pageY - correccionY;
+                }
+                // Guarda la linea
+                guardarLinea();
+                // Redibuja todas las lineas guardadas
+                ctx.beginPath();
+                lineas.forEach(function (segmento) {
+                    ctx.moveTo(segmento[0].x, segmento[0].y);
+                    segmento.forEach(function (punto, index) {
+                        ctx.lineTo(punto.x, punto.y);
+                    });
+                });
+                ctx.stroke();
+            }
+        }
+
+        /**
+         * Funcion que deja de dibujar la linea
+         */
+        function pararDibujar() {
+            pintarLinea = false;
+            guardarLinea();
+        }
+
+        function clickLimpiar() {
+            miCanvas = document.getElementById('pizarra');
+            ctx.fillStyle = '#0D0909';
+            ctx.fillRect(0, 0, miCanvas.width, miCanvas.height)
+            lineas = [];
+        }
+
+        function guardar() {
+
+            canvas = document.getElementById('pizarra');
+            imagen = canvas.toDataURL('image/png');
+
+            //GUardar Imagen
+            link = document.createElement('a');
+            link.download = 'imagen.png'
+            link.href = imagen;
+            link.click();
+            link.delete;
+        }
+
+        // Eventos raton
+        miCanvas.addEventListener('mousedown', empezarDibujo, false);
+        miCanvas.addEventListener('mousemove', dibujarLinea, false);
+        miCanvas.addEventListener('mouseup', pararDibujar, false);
+
+        // Eventos pantallas táctiles
+        miCanvas.addEventListener('touchstart', empezarDibujo, false);
+        miCanvas.addEventListener('touchmove', dibujarLinea, false);
+
+    </script>
+
+
+</body>
+
+</html>
